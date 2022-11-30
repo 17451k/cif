@@ -96,7 +96,7 @@ if __name__ == "__main__":
         copy_and_patch(args.src, config_file, os.path.join(config_build_dir, ".config"))
 
         # Run crosstool-ng
-        r = subprocess.run(["/home/builduser/src/crosstool-ng-1.24.0/ct-ng", "build"], cwd=config_build_dir)
+        r = subprocess.run(["/home/builduser/src/crosstool-ng-1.25.0/ct-ng", "build"], cwd=config_build_dir)
         if r.returncode:
             print("Build failed")
             sys.exit(-1)
