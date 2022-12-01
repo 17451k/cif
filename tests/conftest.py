@@ -46,7 +46,7 @@ def pytest_collection_modifyitems(config, items):
 
 def get_arch(gcc_path):
     r = subprocess.run(
-        f"{gcc_path} -v",
+        gcc_path + " -v",
         shell=True,
         text=True,
         stdout=subprocess.PIPE,
@@ -56,6 +56,6 @@ def get_arch(gcc_path):
     m = re.search(r"Target: (.*?)-", r.stdout)
 
     if not m:
-        raise RuntimeError(f"Can't determine CIF arch: {gcc_path}")
+        raise RuntimeError("Can't determine CIF arch: " + gcc_path)
 
     return m.group(1)
