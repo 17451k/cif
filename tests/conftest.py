@@ -48,7 +48,7 @@ def get_arch(gcc_path):
     r = subprocess.run(
         gcc_path + " -v",
         shell=True,
-        text=True,
+        universal_newlines=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
