@@ -1,19 +1,12 @@
-You can find the CIF documentation online at http://cif.readthedocs.io or build it yourself.
+# CIF
 
-To build the CIF documentation you need:
-* Install [Python 3.4 or higher](https://www.python.org/).
-* Install [Sphinx](http://sphinx-doc.org) and its
-  [Read the Docs theme](https://sphinx-rtd-theme.readthedocs.io/en/latest/), e.g.:
+CIF (C Instrumentation Framework) is a tool that implements
+[aspect-oriented programming](http://en.wikipedia.org/wiki/Aspect-oriented_programming) for the C programming
+language.
 
-      pip3 install sphinx sphinx_rtd_theme
+## Contents
 
-  or in a more reliable way:
-
-      pip3 install -r docs/requirements.txt
-
-* Execute the following command from the source tree root directory (it should be executed each time when the
-  documentation might be changed):
-
-      make docs
-
-Then you can open generated documentation index "docs/_build/html/index.html" in a web browser.
+* [Deployment](docs/deploy.md)
+* [Tutorial](docs/tutorial.md)
+* [Aspect-Oriented C](docs/aoc.md)
+* [Development](docs/development.md)

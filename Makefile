@@ -17,7 +17,7 @@ else
 	CONFIGURE_ARGS_MACOS =
 endif
 
-.PHONY: all uninstall-previous-instances install-keep-previous-instances install test docs clean
+.PHONY: all uninstall-previous-instances install-keep-previous-instances install test clean
 
 all:
 	$(MAKE) cif
@@ -27,7 +27,7 @@ all:
 	  MAKEINFO=missing ../aspectator/configure --prefix=/ --enable-languages=c \
 	    --disable-libsanitizer --disable-multilib --disable-nls --disable-plugin \
 	    --enable-checking=release --with-pkgversion=$(ASPECTATOR_VERSION) \
-	    --with-bugurl="https://forge.ispras.ru/projects/cif/issues" \
+	    --with-bugurl="https://github.com/17451k/cif/issues" \
 	    $(CONFIGURE_ARGS_MACOS) $(ASPECTATOR_CONFIGURE_OPTS); \
 	fi
 	@echo "Begin to (re)build Aspectator"
@@ -62,9 +62,6 @@ uninstall:
 
 test:
 	cd tests && pytest
-
-docs:
-	$(MAKE) -C docs html
 
 clean:
 	rm -rf build build-debug
