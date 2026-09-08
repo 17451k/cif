@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 #include <algorithm>
+#include <cerrno>
 #include <climits>
 #include <cstring>
 #include <array>
@@ -544,6 +545,7 @@ public:
                 // cmd = "sed -i.bak 's/@/#/g' \"" + out + "\"";
                 // execute(cmd, stage_id);
                 execute_cmd({"sed", "-i.bak", "s/@/#/g", out}, {}, stage_id);
+                aux_files.emplace_back(out + ".bak");
             }
 
             stage_id++;
@@ -735,22 +737,40 @@ private:
             const_cast<char* const*>(convert(envp).get())
         );
 
-        if (status == 0) {
-            do {
-                waitpid(pid, &status, 0);
-
-                if (status) {
-                    // Remove intermediate files obtained thus far if required.
-                    clean();
-                    Log(ERROR, WEXITSTATUS(status))
-                            << "Aspectator failed at '" << stage_id << "' stage: " << strerror(status) << endl;
-                }
-            } while (!WIFEXITED(status) && !WIFSIGNALED(status));
-        } else {
+        if (status != 0) {
             // Remove intermediate files obtained thus far if required.
             clean();
             Log(ERROR, status)
                     << "posix_spawn failed: " << strerror(status) << endl;
+        }
+
+        pid_t waited;
+
+        /* A signal can interrupt waitpid() and leave the status untouched.
+        * Retry rather than interpret a stale value.
+        */
+        do {
+            waited = waitpid(pid, &status, 0);
+        } while (waited < 0 && errno == EINTR);
+
+        if (waited < 0) {
+            clean();
+            Log(ERROR) << "Can't wait for aspectator: " << strerror(errno) << endl;
+        }
+
+        // Aspectator can be killed by OOM killer on a large input using a signal.
+        if (WIFSIGNALED(status)) {
+            clean();
+            Log(ERROR, 128 + WTERMSIG(status))
+                    << "Aspectator was terminated by signal " << WTERMSIG(status)
+                    << " at '" << stage_id << "' stage." << endl;
+        }
+
+        if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
+            clean();
+            Log(ERROR, WEXITSTATUS(status))
+                    << "Aspectator failed at '" << stage_id << "' stage with exit code "
+                    << WEXITSTATUS(status) << "." << endl;
         }
     }
 
@@ -761,7 +781,7 @@ private:
 
         Log(DEBUG) << "Remove intermediate files." << endl;
         for (auto& file : aux_files) {
-            if (!exists(file))
+            if (exists(file))
                 unlink(file.c_str());
         }
     }
