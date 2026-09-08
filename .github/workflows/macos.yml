@@ -4,10 +4,21 @@ on: [push, pull_request]
 
 jobs:
   build_macos:
-    runs-on: macos-11
+    runs-on: ${{ matrix.runner }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - runner: macos-15-intel
+          arch: x86_64
+        # Native arm64 builds are not possible yet: Aspectator is based on GCC
+        # 11.2, which has no aarch64-apple-darwin support
+        # - runner: macos-15
+        #   arch: arm64
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
       with:
         submodules: 'recursive'
 
@@ -17,16 +28,16 @@ jobs:
         ./contrib/download_prerequisites
 
     - name: Build CIF
-      run: make -j $(nproc)
+      run: make -j $(sysctl -n hw.ncpu)
       env:
         ASPECTATOR_CONFIGURE_OPTS: --disable-bootstrap
-        CC: gcc-11
-        CXX: g++-11
+        CC: gcc-14
+        CXX: g++-14
 
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v1
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v7
       with:
-        python-version: '3.7'
+        python-version: '3.13'
 
     - name: Test CIF
       run: |
@@ -37,7 +48,7 @@ jobs:
       run: tar -cJf $(inst/bin/cif --version).tar.xz -C inst .
 
     - name: Upload CIF
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v7
       with:
-        name: macos-cif
+        name: macos-${{ matrix.arch }}-cif
         path: "*.tar.xz"
