@@ -1,12 +1,11 @@
-FROM debian:9 as builder
+FROM debian:12 as builder
 
 # Install dependencies
 RUN apt-get update && \
     apt-get install -y make gcc g++ flex bison git rsync \
-        autoconf texinfo help2man libtool libncurses5-dev \
+        autoconf texinfo help2man libtool libncurses-dev \
         bzip2 xz-utils unzip gawk libtool-bin wget python3 \
-        python3-pip curl
-RUN pip3 install pytest
+        python3-pytest curl
 
 RUN groupadd -r builduser && \
     useradd -rm -g builduser builduser

@@ -1,4 +1,4 @@
-FROM debian:9 as builder
+FROM debian:12 as builder
 LABEL stage=builder
 
 ENV CIF_SRC=/usr/src/cif/
@@ -6,8 +6,7 @@ ENV CIF_INST=/usr/local/
 
 # Install dependencies and prepare environment
 RUN apt-get update && \
-    apt-get install -y make gcc g++ flex bison git rsync python3 python3-pip curl
-RUN pip3 install pytest
+    apt-get install -y make gcc g++ flex bison git rsync python3 python3-pytest curl
 
 # Copy CIF source code
 COPY cif.cpp Makefile $CIF_SRC
@@ -29,7 +28,7 @@ RUN DESTDIR=$CIF_INST make install
 RUN make test
 
 # Final image, stripped from unnecessary layers
-FROM debian:9
+FROM debian:12
 
 ENV CIF_INST=/usr/local/
 
