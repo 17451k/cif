@@ -427,10 +427,10 @@ private:
             return;
         }
 
-        uint32_t len = PATH_MAX;
         char real_cif_path[PATH_MAX];
 
     #ifdef __APPLE__
+        uint32_t len = PATH_MAX;
         char cif_path[PATH_MAX];
 
         if (_NSGetExecutablePath(cif_path, &len))
@@ -440,7 +440,16 @@ private:
             Log(ERROR) << "Can't find real path to aspectator." << endl;
 
     #else
-        len = readlink("/proc/self/exe", real_cif_path, PATH_MAX);
+        // Reserve the last byte for the terminator that readlink() doesn't add itself.
+        const ssize_t max_len = sizeof(real_cif_path) - 1;
+        ssize_t len = readlink("/proc/self/exe", real_cif_path, max_len);
+
+        if (len < 0)
+            Log(ERROR) << "Can't find real path to aspectator." << endl;
+
+        if (len == max_len)
+            Log(ERROR) << "Buffer to hold path to CIF is too small." << endl;
+
         real_cif_path[len] = 0;
     #endif
 
