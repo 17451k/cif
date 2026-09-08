@@ -6,7 +6,7 @@ ENV CIF_INST=/usr/local/
 
 # Install dependencies and prepare environment
 RUN apt-get update && \
-    apt-get install -y make gcc g++ flex bison git rsync python3 python3-pytest curl
+    apt-get install -y make gcc g++ flex bison git rsync python3 python3-pytest curl bzip2
 
 # Copy CIF source code
 COPY cif.cpp Makefile $CIF_SRC
