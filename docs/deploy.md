@@ -1,7 +1,7 @@
 # Deployment
 
 You can download archives with CIF binaries prepared in advance from artifacts attached to
-[GitHub Actions](https://github.com/ldv-klever/cif/actions).
+[GitHub Releases](https://github.com/17451k/cif/releases).
 Also, you can build CIF yourself from scratch according to instructions below.
 Section [Building debug version of Aspectator](development.md#debug_deploy) describes various variants of development builds.
 
