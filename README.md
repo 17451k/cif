@@ -10,3 +10,7 @@ language.
 * [Tutorial](docs/tutorial.md)
 * [Aspect-Oriented C](docs/aoc.md)
 * [Development](docs/development.md)
+
+## Acknowledgments
+
+CIF and Aspectator are created by Evgeny Novikov.
