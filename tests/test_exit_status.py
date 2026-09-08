@@ -20,14 +20,14 @@ class TestExitStatus(utils.CIFTestCase):
 
         return stub
 
-    def run_cif(self, cif_output, aspectator=None, compilation_opts=None, keep=False):
+    def run_cif(self, cif_output, aspectator=None, compilation_opts=None, keep=False, stage='compilation'):
         cif = os.environ.get('CIF', '../inst/bin/cif')
 
         cmd = [cif,
                '--in', 'input/stmts/for.c',
                '--aspect', 'aspect/func-calls.aspect',
                '--back-end', 'src',
-               '--stage', 'compilation',
+               '--stage', stage,
                '--out', cif_output,
                '--debug', 'ALL']
 
@@ -79,10 +79,29 @@ class TestExitStatus(utils.CIFTestCase):
         self.assertEqual(status, 3)
         self.assertIn('exit code 3', self.log)
 
+    def test_intermediate_files_are_removed(self):
+        out = utils.WORK_DIR + '/removed.c'
+        status = self.run_cif(cif_output=out)
+
+        self.assertEqual(status, 0)
+        self.assertTrue(os.path.exists(out))
+
+        for aux_file in self.aux_files(out):
+            self.assertFalse(os.path.exists(aux_file), aux_file + ' was not removed')
+
+    def test_intermediate_files_are_kept(self):
+        out = utils.WORK_DIR + '/kept.c'
+        status = self.run_cif(cif_output=out, keep=True)
+
+        self.assertEqual(status, 0)
+
+        for aux_file in self.aux_files(out):
+            self.assertTrue(os.path.exists(aux_file), aux_file + ' was removed')
+
     # Intermediate files obtained thus far are removed when a stage fails. Make
     # the last stage fail so that all the previous ones leave their files.
     def test_intermediate_files_are_removed_on_failure(self):
-        out = utils.WORK_DIR + '/removed.c'
+        out = utils.WORK_DIR + '/failed.c'
         status = self.run_cif(cif_output=out, compilation_opts='-fnonexistent-option-xyz')
 
         self.assertNotEqual(status, 0)
@@ -90,11 +109,17 @@ class TestExitStatus(utils.CIFTestCase):
         for aux_file in self.aux_files(out):
             self.assertFalse(os.path.exists(aux_file), aux_file + ' was not removed')
 
-    def test_intermediate_files_are_kept_on_failure(self):
-        out = utils.WORK_DIR + '/kept.c'
-        status = self.run_cif(cif_output=out, compilation_opts='-fnonexistent-option-xyz', keep=True)
+    # Output of the last stage to be performed is not an intermediate file even
+    # though the very same file is one when further stages are performed too.
+    def test_output_of_requested_stage_is_not_removed(self):
+        out = utils.WORK_DIR + '/staged.c'
+        status = self.run_cif(cif_output=out, stage='instrumentation')
 
-        self.assertNotEqual(status, 0)
+        self.assertEqual(status, 0)
+        self.assertTrue(os.path.exists(out + '.instrumented'))
 
         for aux_file in self.aux_files(out):
-            self.assertTrue(os.path.exists(aux_file), aux_file + ' was removed')
+            if aux_file.endswith('.instrumented'):
+                continue
+
+            self.assertFalse(os.path.exists(aux_file), aux_file + ' was not removed')

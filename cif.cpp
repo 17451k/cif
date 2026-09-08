@@ -525,7 +525,10 @@ public:
                 prepare_c_backend();
             }
 
-            if (stage != "compilation" && stage != "C-backend")
+            /* Output of the last stage to be performed is what was asked for,
+            * so it is not an intermediate file.
+            */
+            if (stage != "compilation" && stage != "C-backend" && stage != conf.stage)
                 aux_files.emplace_back(out);
 
             if (stage != "C-backend") {
@@ -553,6 +556,9 @@ public:
             if (conf.stage == stage)
                 break;
         }
+
+        // Remove intermediate files, unless they were asked to be kept.
+        clean();
 
         Log(NORMAL) << "Make all successfully." << endl;
     }
