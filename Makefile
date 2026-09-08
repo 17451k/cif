@@ -12,7 +12,7 @@ UBUNTU_LIB = /usr/lib/x86_64-linux-gnu
 # System headers are no longer located in /usr/include in macOS >= Mojave.
 ifeq ($(shell uname), Darwin)
 	CONFIGURE_ARGS_MACOS = --with-native-system-header-dir=/usr/include
-	CONFIGURE_ARGS_MACOS += --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
+	CONFIGURE_ARGS_MACOS += --with-sysroot=$(shell xcrun --show-sdk-path)
 else
 	CONFIGURE_ARGS_MACOS =
 endif
