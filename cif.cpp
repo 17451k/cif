@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <map>
 #include <sstream>
