@@ -1,0 +1,4 @@
+before: set_global(int global_var)
+{
+  $arg1++;
+}
