@@ -195,12 +195,13 @@ c-keyword        ::= "auto"         | "char"     | "const"      | "double"
                      "short"        | "signed"   | "static"     | "struct"
                      "typedef"      | "union"    | "unsigned"   | "void"
                      "volatile"     | "_Bool"    | "_Complex"   | "_Imaginary"
-aoc-keyword      ::= "after"        | "around"   | "before"     | "call"
-                     "declare_func" | "define"   | "execution"  | "expand"
-                     "file"         | "get"      | "get_global" | "get_local"
-                     "infile"       | "infunc"   | "info"       | "introduce"
-                     "new"          | "pointcut" | "set"        | "set_global"
-                     "set_local"    | "query"
+aoc-keyword      ::= "after"        | "around"       | "before"       | "call"
+                     "callp"        | "declare_func" | "define"       | "execution"
+                     "expand"       | "file"         | "get"          | "get_global"
+                     "get_local"    | "infile"       | "infunc"       | "info"
+                     "init_global"  | "init_local"   | "introduce"    | "new"
+                     "pointcut"     | "query"        | "set"          | "set_global"
+                     "set_local"    | "use_func"     | "use_var"
 ```
 
 ### Constraints
@@ -216,9 +217,10 @@ You still can use them in [advice bodies](#advice_bodies), but they are not pars
 It supports:
 
 * "after", "around", "before", "info", "new" and "query" ([Advices](#advices));
-* "call", "define", "declare_func", "execution", "expand", "file", "get", "get_global",
-  "get_local", "infile", "infunc", "introduce", "pointcut", "set", "set_global" and
-  "set_local" ([Pointcuts](#pointcuts)).
+* "call", "callp", "define", "declare_func", "execution", "expand", "file", "get",
+  "get_global", "get_local", "infile", "infunc", "init_global", "init_local", "introduce",
+  "pointcut", "set", "set_global", "set_local", "use_func" and "use_var"
+  ([Pointcuts](#pointcuts)).
 
 ### Semantics
 
@@ -451,14 +453,13 @@ to use whitespace characters in special directives except for separating special
 All special directives start with the **$** symbol which cannot be used in the C code.
 
 `identifier` defines a type of special directive.
-The following types of special directives are supported: **$arg**, **$arg_numb**, **$arg_sign**, **$arg_size**,
-**$arg_type**, **$arg_val**, **$context_file**, **$context_func_file**, **$context_func_name**, **$env**, **$fprintf**,
-**$name**, **$proceed**, **$res**, **$ret_type**, **$storage_class**, **$signature** and **$this**.
+Aspectator supports different sets of special directives for different kinds of join points, all of them are listed in
+Semantics below.
 It is forbidden to use digits in `identifier` of `special-directive`.
 This is done to avoid collisions of identifiers with `aoc-integer-constant` that may be a part of special directives.
 
-`aoc-integer-constant` of `special-directive` should be used only together with **$arg**, **$arg_sign**, **$arg_size**,
-**$arg_type** or **$arg_val**.
+`aoc-integer-constant` of `special-directive` should be used only together with **$arg**, **$arg_name**,
+**$arg_sign**, **$arg_size**, **$arg_type**, **$arg_type_str**, **$arg_value** or **$arg_val**.
 These integer constants can only refer ordinal numbers of arguments of functions or macros from appropriate join points.
 Numbering begins with 1.
 You can not separate `aoc-integer-constant` from `aoc-identifier` as it was stated above.
@@ -491,10 +492,47 @@ These values are determined at the stage of aspect parsing.
 Instead of **$env** a value of a corresponding environment variable is substituted.
 **$this** is identified with a name of a woven in C source file.
 
-The remaining special directives are substituted at aspect weaving as follows:
+The remaining special directives are substituted at aspect weaving.
+Macro join points are handled at aspect preprocessing while all the others are handled later, so the two provide
+different sets of special directives.
 
-* **$arg***i* -- a name of i<sup>th</sup> formal parameter of a function or macro.
-* **$arg_numb** -- the number of parameters of a function or macro.
+Special directives available for all join points:
+
+* **$path** -- a path to a file containing a join point.
+* **$signature** -- a signature of a macro, function, variable or composite type corresponding to a join point.
+* **$proceed** -- a join point itself, for example, an original function call.
+  It can be used only in "before", "around", "after" and "new" advices.
+
+Special directives for macro join points ("define" and "expand"):
+
+* **$macro_name** -- a name of a macro.
+* **$macro_signature** -- a signature of a macro.
+* **$line** -- a line where a macro is defined.
+* **$expansion_path** -- a path to a file where a macro is expanded ("expand" only).
+* **$expansion_line** -- a line where a macro is expanded ("expand" only).
+* **$arg***i* -- a name of i<sup>th</sup> formal parameter of a macro.
+* **$arg_numb** -- the number of parameters of a macro.
+* **$arg_val***i* -- a value of i<sup>th</sup> actual parameter of a macro as is ("expand" only).
+* **$actual_args** -- all actual parameters of a macro in the form
+  "actual_arg1=..., actual_arg2=..." or **NULL** when there are none ("expand" only).
+
+Special directives for function join points ("call", "callp", "execution", "declare_func" and "use_func"):
+
+* **$func_name** -- a name of a function.
+* **$func_ptr_name** -- a name of a function pointer ("callp" only).
+* **$func_signature** -- a signature of a function.
+* **$decl_line** -- a line where a function is declared or defined.
+* **$call_line** -- a line where a function is called.
+* **$use_line** -- a line where a function is used otherwise than called.
+* **$func_context** -- a signature of a function containing a join point.
+* **$func_context_name** -- a name of a function containing a join point.
+* **$func_context_path** -- a path to a file that defines a function containing a join point.
+* **$func_context_decl_line** -- a line where a function containing a join point is declared.
+* **$storage_class** -- a storage class of a function.
+* **$arg***i* -- a name of i<sup>th</sup> formal parameter of a function.
+* **$arg_name***i* -- a name of i<sup>th</sup> actual parameter of a function.
+  It is provided only when a corresponding actual parameter is a plain variable.
+* **$arg_numb** -- the number of parameters of a function.
 * **$arg_sign***i* -- a signature of i<sup>th</sup> actual parameter of a function.
   An *argument signature* is an identifier based on a syntax tree of a corresponding argument.
   Argument signatures should be built in a way to distinguish arguments corresponding to different memory objects
@@ -503,16 +541,36 @@ The remaining special directives are substituted at aspect weaving as follows:
   array or **-1** otherwise.
 * **$arg_type***i* -- a type of i<sup>th</sup> formal parameter of a function.
   A corresponding type is provided by using *typedef*, so function pointers are also supported.
-* **$arg_val***i* -- a function name if i<sup>th</sup> actual parameter of a function is an address of some known function
-  or **0** otherwise.
-* **$context_file** -- a path to a file containing a join point.
-* **$context_func_file** -- a path to a file that defines a function containing a join point.
-* **$context_func_name** -- a name of a function containing a join point.
-* **$name** -- a name of a macro, function, variable or composite type corresponding to a join point.
-* **$proceed** -- a join point itself, for example, an original function call.
+* **$arg_type_str***i* -- a format string for printing a value of i<sup>th</sup> formal parameter of a function,
+  e.g. "int %s".
+* **$arg_value***i* -- a function name if i<sup>th</sup> actual parameter of a function is an address of some known
+  function or **0** otherwise.
+* **$actual_arg_func_names** -- names of all actual parameters of a function that are addresses of known functions or
+  **NULL** when there are none.
 * **$res** -- a function return value (it is provided by a special variable).
-* **$ret_type** -- a type of function's return value or variable or a composite type (it is provided via *typedef*).
-* **$storage_class** -- a storage class of a function or global variable.
+  It can be used only in "after" advices.
+* **$ret_type** -- a type of function's return value (it is provided via *typedef*).
+* **$ret_type_str** -- a format string for printing a function return value, e.g. "int %s".
+* **$aspect_func_name** -- a name of an auxiliary function created for a matched function definition
+  ("execution" only).
+
+Special directives for variable join points ("get", "get_global", "get_local", "set", "set_global", "set_local",
+"init_global", "init_local" and "use_var"):
+
+* **$var_name** -- a name of a variable.
+* **$var_type_name** -- a type of a variable.
+  It is provided only when an aspect names that type rather than matches it with a wildcard.
+* **$var_init_values** -- values a variable is initialized with, in the form "value:offset".
+* **$var_init_list** -- a listing of a variable initializer including declarations of its fields.
+* **$var_init_list_json** -- the same as **$var_init_list** but in the JSON format.
+* **$use_line** -- a line where a variable is used.
+* **$storage_class** -- a storage class of a global variable.
+* **$func_context_name**, **$func_context_path** -- as for function join points.
+* **$res** -- a value assigned to a variable. It can be used only in "after" advices.
+* **$ret_type** -- a type of a matched variable (it is provided via *typedef*).
+
+For join points corresponding to declarations of composite types ("introduce") **$signature** and **$ret_type**
+are provided.
 
 [^4]: This file is created if it does not exist.
 
@@ -742,6 +800,8 @@ primitive-pointcut ::= "define" "(" `macro` ")"
                        "declare_func" "(" `declaration` ")"
                        "execution" "(" `declaration` ")"
                        "call" "(" `declaration` ")"
+                       "callp" "(" `declaration` ")"
+                       "use_func" "(" `declaration` ")"
                        "get" "(" `declaration` ")"
                        "get_global" "(" `declaration` ")"
                        "get_local" "(" `declaration` ")"
@@ -750,6 +810,9 @@ primitive-pointcut ::= "define" "(" `macro` ")"
                        "set" "(" `declaration` ")"
                        "set_global" "(" `declaration` ")"
                        "set_local" "(" `declaration` ")"
+                       "init_global" "(" `declaration` ")"
+                       "init_local" "(" `declaration` ")"
+                       "use_var" "(" `declaration` ")"
                        "file" "(" `file-name` ")"
                        "infile" "(" `file-name` ")"
 ```
@@ -832,21 +895,27 @@ on them) and "$signature".
 Besides, in `advice-body` of "before", "around", "after" and "query" it is possible to use the following
 special directives when `pointcut` matches an appropriate joint point:
 
-* For macro definitions -- "$arg", "$arg_numb", "$context_file", "$name" and "$proceed".
-* For macro substitutions -- "$arg", "$arg_numb", "$arg_val" (a value of an actual macro parameter as is),
-  "$context_file", "$name" and "$proceed".
-* For function calls -- "$arg", "$arg_numb", "$arg_sign", "$arg_size", "$arg_type", "$arg_val",
-  "$context_file", "$context_func_file", "$context_func_name", "$name", "$proceed", "$res"
-  (only for "after"), "$ret_type" and "$storage_class".
-* For function declarations -- "$arg_numb", "$arg_type", "$context_file", "$name", "$ret_type" and
-  "$storage_class".
-* For function definitions -- "$arg", "$arg_numb", "$arg_type", "$context_file", "$name",
-  "$proceed", "$res" (only for "after"), "$ret_type" and "$storage_class".
-* For usages and assignments of values to local or global variables -- "$context_file", "$context_func_file",
-  "$context_func_name", "$name", "$proceed", "$res" (only for "after"), "$ret_type" (a matched variable
-  type) and "$storage_class" (only for global variables).
-* For declarations of composite types -- "$context_file", "$name" and "$ret_type" (a matched composite
-  type).
+* For macro definitions -- "$arg", "$arg_numb", "$line", "$macro_name", "$macro_signature", "$path"
+  and "$proceed".
+* For macro substitutions -- "$actual_args", "$arg", "$arg_numb", "$arg_val" (a value of an actual macro
+  parameter as is), "$expansion_line", "$expansion_path", "$line", "$macro_name", "$macro_signature",
+  "$path" and "$proceed".
+* For function calls -- "$actual_arg_func_names", "$arg", "$arg_name", "$arg_numb", "$arg_sign",
+  "$arg_size", "$arg_type", "$arg_type_str", "$arg_value", "$call_line", "$func_context",
+  "$func_context_decl_line", "$func_context_name", "$func_context_path", "$func_name",
+  "$func_signature", "$path", "$proceed", "$res" (only for "after"), "$ret_type", "$ret_type_str"
+  and "$storage_class".
+* For function declarations -- "$arg_numb", "$arg_type", "$arg_type_str", "$decl_line", "$func_name",
+  "$func_signature", "$path", "$ret_type", "$ret_type_str" and "$storage_class".
+* For function definitions -- "$arg", "$arg_numb", "$arg_type", "$aspect_func_name", "$decl_line",
+  "$func_name", "$func_signature", "$path", "$proceed", "$res" (only for "after"), "$ret_type",
+  "$ret_type_str" and "$storage_class".
+* For usages and assignments of values to local or global variables -- "$func_context_name",
+  "$func_context_path", "$path", "$proceed", "$res" (only for "after"), "$ret_type" (a matched variable
+  type), "$storage_class" (only for global variables), "$use_line", "$var_init_list",
+  "$var_init_list_json", "$var_init_values", "$var_name" and "$var_type_name".
+* For declarations of composite types -- "$path", "$ret_type" (a matched composite type) and
+  "$signature".
 
 ### Semantics
 
