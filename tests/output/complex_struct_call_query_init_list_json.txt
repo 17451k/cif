@@ -1,10 +1,10 @@
 declaration: struct A a;
-[{"value": "42", "field": "int a;"}, {"value": [{"value": "24", "field": "int u;"}], "field": "union { int u; };"}]
+[{"field": "int a;", "value": "42"}, {"field": "union { int u; };", "value": [{"field": "int u;", "value": "24"}]}]
 declaration: struct A b;
 "{}"
 declaration: struct A c[2U];
-[{"value": [{"value": "21", "field": "int a;"}, {"value": [{"value": "12", "field": "int u;"}], "field": "union { int u; };"}], "index": 0}, {"value": "{}", "index": 1}]
+[{"index": 0, "value": [{"field": "int a;", "value": "21"}, {"field": "union { int u; };", "value": [{"field": "int u;", "value": "12"}]}]}, {"index": 1, "value": "{}"}]
 declaration: struct B d;
-[{"value": "{}", "field": "struct A b;"}]
+[{"field": "struct A b;", "value": "{}"}]
 declaration: struct { int v; int t; } e;
-[{"value": "212", "field": "int v;"}]
+[{"field": "int v;", "value": "212"}]

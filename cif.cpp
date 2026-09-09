@@ -703,6 +703,18 @@ private:
     }
 
     void execute_stage() {
+        /* Aspectator is based on GCC 16, whose defaults differ from those of
+         * GCC 11 that Aspectator was based on before:
+         * 1. The default language standard is gnu23 rather than gnu17. It
+         *    changes both parsing of input files (e.g. "()" means "(void)",
+         *    "bool" is a keyword) and printed output.
+         * 2. Some diagnostics (implicit function declarations, int
+         *    conversions, incompatible pointer types, etc.) became errors.
+         * Keep the former behaviour by default since CIF is expected to accept
+         * anything that a compiler used to build a target program accepted.
+         * These options precede all other ones, so users can override them. */
+        vector<string> default_opts = {"-std=gnu17", "-fpermissive"};
+
         /* 1. CIF core executable.
          * 2. Some options like "-I" should be placed ahead to have more priority.
          * 3. Standard compilation (preprocesing) options.
@@ -713,6 +725,7 @@ private:
          * 7. Output file. */
         vector<string> argv =
             vector<string>{conf.aspectator}
+            + default_opts
             + stage_pre_opts
             + options
             + vector<string>{"-fno-builtin"}

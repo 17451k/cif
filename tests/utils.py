@@ -64,7 +64,8 @@ class CIFTestCase(unittest.TestCase):
                 if aspectator_opt == '-fshort-wchar':
                     extra_opts.append(aspectator_opt)
 
-            r = subprocess.run([self.aspectator, '-fsyntax-only', *extra_opts, self.cif_output])
+            # Check output with the same defaults that cif passes to aspectator.
+            r = subprocess.run([self.aspectator, '-std=gnu17', '-fpermissive', '-fsyntax-only', *extra_opts, self.cif_output])
             self.test_case.assertEqual(r.returncode, 0)
 
     def __init__(self, *arguments):
