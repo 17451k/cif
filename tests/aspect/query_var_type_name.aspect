@@ -1,0 +1,7 @@
+query: init_global(my_int $) {
+  $fprintf<"work/info.txt","init %s %s\n",$var_name,$var_type_name>
+}
+
+query: use_var(my_int $) {
+  $fprintf<"work/info.txt","use %s %s\n",$var_name,$var_type_name>
+}

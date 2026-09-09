@@ -1,0 +1,3 @@
+init global_var my_int
+use global_var my_int
+use global_var my_int

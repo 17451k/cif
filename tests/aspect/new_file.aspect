@@ -1,0 +1,4 @@
+new: file("work/generated.c")
+{
+int cif_generated_var = 42;
+}

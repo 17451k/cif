@@ -1,0 +1,4 @@
+/* "info" is a deprecated alias for "query", it should behave identically. */
+info: call($ $(..)) {
+  $fprintf<"work/info.txt","%s %d\n",$func_name,$call_line>
+}

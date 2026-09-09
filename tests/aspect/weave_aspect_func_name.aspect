@@ -1,0 +1,4 @@
+before: execution($ $(..))
+{
+  $fprintf<"work/info.txt","%s\n",$aspect_func_name>;
+}

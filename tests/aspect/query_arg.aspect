@@ -1,0 +1,4 @@
+/* $arg refers to formal parameters, which are not available for queries. */
+query: call($ $(..)) {
+  $fprintf<"work/info.txt","%s\n",$arg1>
+}

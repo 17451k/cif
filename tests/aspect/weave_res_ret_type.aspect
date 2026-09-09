@@ -1,0 +1,5 @@
+after: execution(static int helper(int *ptr, my_int num))
+{
+  $ret_type ldv_saved_res = $res;
+  (void)ldv_saved_res;
+}

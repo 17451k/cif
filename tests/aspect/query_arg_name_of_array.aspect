@@ -1,0 +1,5 @@
+/* The first actual parameter of the matched call is an array rather than a
+   plain variable, so it has no name of its own. */
+query: call($ $(..)) {
+  $fprintf<"work/info.txt","%s\n",$arg_name1>
+}
