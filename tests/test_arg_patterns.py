@@ -17,14 +17,12 @@ class TestArgPatterns(utils.CIFTestCase):
         self.compare(output='work/info.txt', expected='output/arg_size.txt')
 
     # $arg_name is weaved just for actual parameters that are plain variables.
-    # For all the others ldv_get_arg_name() intentionally returns NULL, but its
-    # only caller passes that NULL to ldv_copy_str() and Aspectator crashes
-    # with an internal compiler error. $arg_size and $arg_value avoid this by
-    # generating stubs ("-1" and "0" respectively) instead.
-    @pytest.mark.xfail(strict=True, reason='Aspectator segfaults on $arg_name of a non-variable argument')
-    def test_arg_name_of_array(self):
+    # For all the others stub "NULL" is generated, like $arg_size and
+    # $arg_value generate "-1" and "0" respectively.
+    def test_arg_name_without_name(self):
         self.cif.run(cif_input='input/aspect_patterns.c', aspect='aspect/query_arg_name_of_array.aspect',
                      stage='instrumentation')
+        self.compare(output='work/info.txt', expected='output/arg_name_without_name.txt')
 
     # $arg works in advices that are weaved in, but for source code queries
     # Aspectator does not collect formal parameters and fails with an internal
