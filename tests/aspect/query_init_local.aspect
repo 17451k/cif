@@ -1,0 +1,3 @@
+query: init_local($ $) {
+  $fprintf<"work/info.txt","%s %s\n",$var_name,$signature>
+}

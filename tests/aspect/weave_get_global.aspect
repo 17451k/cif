@@ -1,0 +1,4 @@
+before: get_global(int global_var)
+{
+  $arg1--;
+}

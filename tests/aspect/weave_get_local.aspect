@@ -1,0 +1,4 @@
+before: get_local(int local_var)
+{
+  $arg1--;
+}
