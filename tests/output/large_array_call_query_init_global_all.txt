@@ -1,0 +1,2 @@
+input/large_array.c array int *array[1048576U]; none
+input/large_array.c large_struct struct large_struct large_struct; none||1048576:0

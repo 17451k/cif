@@ -1,2 +1,8 @@
 declaration: int *array[1048576U];
 value: too large
+declaration: struct large_struct large_struct;
+value:
+  field declaration: int array[1048576U];
+  value: too large
+  field declaration: int size;
+  value: 1048576

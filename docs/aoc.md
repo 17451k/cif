@@ -575,6 +575,8 @@ Special directives for variable join points ("get", "get_global", "get_local", "
 * **$var_init_values** -- values a variable is initialized with, in the form "value:offset".
 * **$var_init_list** -- a listing of a variable initializer including declarations of its fields.
 * **$var_init_list_json** -- the same as **$var_init_list** but in the JSON format.
+  Initializers with more than 2048 elements are not expanded: **$var_init_values** omits them and the other two
+  patterns report them as "too large".
 * **$use_line** -- a line where a variable is used.
 * **$storage_class** -- a storage class of a global variable.
 * **$func_context_name**, **$func_context_path** -- as for function join points.
