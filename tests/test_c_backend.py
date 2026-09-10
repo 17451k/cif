@@ -255,3 +255,12 @@ class TestCBackend(utils.CIFTestCase):
     def test_var_decl_storage_classes(self):
         self.cif.run(cif_input='input/c-backend/var-decl-storage-classes.c', stage='C-backend', cif_output='work/var-decl-storage-classes.c')
         self.compare(output='work/var-decl-storage-classes.c', expected='output/c-backend/var-decl-storage-classes.c')
+
+    def test_cleanup(self):
+        self.cif.run(cif_input='input/c-backend/cleanup.c', stage='C-backend', cif_output='work/cleanup.c')
+        self.compare(output='work/cleanup.c', expected='output/c-backend/cleanup.c')
+
+    @pytest.mark.x86_64
+    def test_addr_space(self):
+        self.cif.run(cif_input='input/c-backend/addr-space.c', stage='C-backend', cif_output='work/addr-space.c')
+        self.compare(output='work/addr-space.c', expected='output/c-backend/addr-space.c')

@@ -1,0 +1,2 @@
+input/c-backend/cleanup.c unlock 4 static void unlock(int *lock); static
+input/c-backend/cleanup.c main 9 int main(void); none
