@@ -1,0 +1,81 @@
+name: linux
+
+on: [push, pull_request]
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-24.04
+    # Build on an old distribution, so that archives with CIF binaries work
+    # both on it and on newer ones.
+    container: debian:12
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [native, aarch64_be-unknown-linux-gnu, arm-unknown-eabi]
+
+    env:
+      CT_NG_VERSION: 1.25.0
+
+    steps:
+    - name: Install system dependencies
+      run: |
+        apt-get update
+        apt-get install -y make gcc g++ flex bison git rsync python3 python3-pytest curl bzip2 xz-utils \
+          autoconf texinfo help2man libtool libtool-bin libncurses-dev unzip gawk wget
+
+    - uses: actions/checkout@v7
+      with:
+        submodules: 'recursive'
+
+    - name: Download GCC dependencies
+      run: |
+        cd aspectator
+        ./contrib/download_prerequisites
+
+    - name: Build CIF
+      if: matrix.config == 'native'
+      run: make -j $(nproc)
+
+    - name: Test CIF
+      if: matrix.config == 'native'
+      run: make test
+
+    - name: Archive CIF
+      if: matrix.config == 'native'
+      run: tar -cJf $(inst/bin/cif --version).tar.xz -C inst .
+
+    # Sources of toolchain components downloaded by crosstool-ng
+    # (CT_LOCAL_TARBALLS_DIR in configurations).
+    - name: Cache crosstool-ng downloads
+      if: matrix.config != 'native'
+      uses: actions/cache@v4
+      with:
+        path: ~/src
+        key: crosstool-ng-downloads-${{ hashFiles('config/*') }}
+        restore-keys: crosstool-ng-downloads-
+
+    - name: Install crosstool-ng
+      if: matrix.config != 'native'
+      run: |
+        mkdir -p ~/crosstool-ng
+        cd ~/crosstool-ng
+        curl -LO https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-$CT_NG_VERSION/crosstool-ng-$CT_NG_VERSION.tar.xz
+        tar -xf crosstool-ng-$CT_NG_VERSION.tar.xz
+        cd crosstool-ng-$CT_NG_VERSION
+        ./configure --enable-local
+        make -j $(nproc)
+        echo "$PWD" >> $GITHUB_PATH
+
+    - name: Build cross CIF
+      if: matrix.config != 'native'
+      run: python3 build.py -o . ${{ matrix.config }}
+      env:
+        # Steps run as root in the container
+        CT_ALLOW_BUILD_AS_ROOT_SURE: 1
+
+    - name: Upload CIF
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ matrix.config }}-cif
+        path: "*.tar.xz"
