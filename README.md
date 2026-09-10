@@ -112,12 +112,37 @@ with the caller and the line, which is how [Klever](https://github.com/ldv-kleve
 The example above is available in `docs/samples` (`stack.c` and `stack.aspect`), and the [tutorial](docs/tutorial.md)
 walks through the other kinds of join points.
 
-## Contents
+## Installation
 
-* [Deployment](docs/deploy.md)
-* [Tutorial](docs/tutorial.md)
-* [Aspect-Oriented C](docs/aoc.md)
-* [Development](docs/development.md)
+Archives with prebuilt binaries for Linux and macOS are attached to
+[GitHub Releases](https://github.com/17451k/cif/releases).
+Download the one for your system, unpack it and put its `bin` directory to `PATH`:
+
+```console
+$ mkdir ~/cif
+$ tar -xf linux-x86_64-cif-2022-07-07.tar.xz -C ~/cif
+$ export PATH=~/cif/bin:$PATH
+$ cif --version
+```
+
+The archive contains `cif` and `aspectator`, a GCC-based compiler that CIF runs to weave aspects in.
+Aspectator uses the system assembler and linker, so a regular C toolchain should be installed as well.
+Archives named after a target like `linux-arm-unknown-eabi-cif` contain cross versions of CIF that process code for
+that target; their executables are prefixed with the target name, e.g. `arm-unknown-eabi-cif`.
+
+To build CIF yourself, see [Building from source](docs/build.md).
+
+## Documentation
+
+Using CIF:
+
+* [Tutorial](docs/tutorial.md) shows typical use cases step by step.
+* [Aspect-Oriented C](docs/aoc.md) is the reference of the aspect language.
+
+Developing CIF:
+
+* [Building from source](docs/build.md)
+* [Development](docs/development.md) covers debugging and profiling of Aspectator.
 
 ## Acknowledgments
 
