@@ -61,6 +61,8 @@ jobs:
     - name: Install crosstool-ng
       if: matrix.config != 'native'
       run: |
+        # crosstool-ng saves downloads to CT_LOCAL_TARBALLS_DIR only if it exists
+        mkdir -p ~/src
         mkdir -p ~/crosstool-ng
         cd ~/crosstool-ng
         curl -LO https://github.com/crosstool-ng/crosstool-ng/releases/download/crosstool-ng-$CT_NG_VERSION/crosstool-ng-$CT_NG_VERSION.tar.xz
