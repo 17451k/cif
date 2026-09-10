@@ -1,0 +1,17 @@
+/* Check preconditions of the stack API at every call site without changing
+   either the API or its callers. */
+before: call(void stack_push(struct stack *s, int value))
+{
+    if (s->top == s->size) {
+        fprintf(stderr, "stack_push(): pushing %d to a full stack of size %d\n", value, s->size);
+        abort();
+    }
+}
+
+before: call(int stack_pop(struct stack *s))
+{
+    if (s->top == 0) {
+        fprintf(stderr, "stack_pop(): popping from an empty stack\n");
+        abort();
+    }
+}
