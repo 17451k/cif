@@ -54,15 +54,25 @@ def get_cif_version(cif_bin):
 
 
 def copy_and_patch(cif_src, src, dst):
+    aspectator_src = os.path.join(cif_src, "aspectator")
+
     with open(src, "r") as src_fh:
         config_lines = src_fh.readlines()
 
     with open(dst, "w") as dst_fh:
         for line in config_lines:
-            m = re.search(r'"(.*?)/aspectator.*?"', line)
+            m = re.match(r'CT_(\w+)_CUSTOM_LOCATION=', line)
 
             if m:
-                line = line.replace(m.group(1), cif_src)
+                if m.group(1) == "GCC":
+                    location = aspectator_src
+                else:
+                    # Prerequisites are located in versioned directories, but
+                    # ./contrib/download_prerequisites creates symbolic links
+                    # without versions, so use them to find actual directories.
+                    location = os.path.realpath(os.path.join(aspectator_src, m.group(1).lower()))
+
+                line = 'CT_{}_CUSTOM_LOCATION="{}"\n'.format(m.group(1), location)
 
             dst_fh.write(line)
 
@@ -96,7 +106,7 @@ if __name__ == "__main__":
         copy_and_patch(args.src, config_file, os.path.join(config_build_dir, ".config"))
 
         # Run crosstool-ng
-        r = subprocess.run(["/home/builduser/src/crosstool-ng-1.25.0/ct-ng", "build"], cwd=config_build_dir)
+        r = subprocess.run([os.environ.get("CT_NG", "ct-ng"), "build"], cwd=config_build_dir)
         if r.returncode:
             print("Build failed")
             sys.exit(-1)
