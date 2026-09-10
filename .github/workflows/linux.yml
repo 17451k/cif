@@ -15,7 +15,7 @@ jobs:
         config: [native, aarch64_be-unknown-linux-gnu, arm-unknown-eabi]
 
     env:
-      CT_NG_VERSION: 1.25.0
+      CT_NG_VERSION: 1.29.0
 
     steps:
     - name: Install system dependencies
