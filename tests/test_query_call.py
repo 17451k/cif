@@ -7,6 +7,12 @@ class TestQueryCall(utils.CIFTestCase):
         self.make_relpath('work/info.txt')
         self.compare(output='work/info.txt', expected='output/simple_query_call_all.txt')
 
+    def test_simple_query_call_all_compilation(self):
+        # Queries are executed once even though matching is performed at both instrumentation and compilation stages.
+        self.cif.run(cif_input='input/simple.c', aspect='aspect/query_call_all.aspect')
+        self.make_relpath('work/info.txt')
+        self.compare(output='work/info.txt', expected='output/simple_query_call_all.txt')
+
     def test_simple_query_call_args(self):
         self.cif.run(cif_input='input/simple.c', aspect='aspect/query_call_args.aspect', stage='instrumentation')
         self.make_relpath('work/info.txt')
