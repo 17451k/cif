@@ -28,7 +28,10 @@ jobs:
       with:
         submodules: 'recursive'
 
+    # Cross builds do not need them: crosstool-ng builds its own companion
+    # libraries. Moreover, GCC would try to build the in-tree ISL then.
     - name: Download GCC dependencies
+      if: matrix.config == 'native'
       run: |
         cd aspectator
         ./contrib/download_prerequisites
