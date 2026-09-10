@@ -77,6 +77,11 @@ def fix_permissions(path):
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
 
+    # Paths are used with different working directories below
+    args.build = os.path.abspath(args.build)
+    args.output = os.path.abspath(args.output)
+    args.src = os.path.abspath(args.src)
+
     config_dir = os.path.join(args.src, "config")
 
     for config_name in os.listdir(config_dir):

@@ -28,6 +28,11 @@ jobs:
       with:
         submodules: 'recursive'
 
+    # Otherwise git refuses to work in the checkout owned by another user and
+    # versions of CIF and Aspectator become "unknown"
+    - name: Trust the checkout
+      run: git config --global --add safe.directory '*'
+
     # Cross builds do not need them: crosstool-ng builds its own companion
     # libraries. Moreover, GCC would try to build the in-tree ISL then.
     - name: Download GCC dependencies
