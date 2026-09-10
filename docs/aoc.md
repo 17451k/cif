@@ -496,6 +496,18 @@ The remaining special directives are substituted at aspect weaving.
 Macro join points are handled at aspect preprocessing while all the others are handled later, so the two provide
 different sets of special directives.
 
+> [!NOTE]
+> Special directives that describe a particular join point of a function or a variable rather than parameters of an
+> advice, that is **$path**, **$signature**, **$func_name**, **$func_ptr_name**, **$func_signature**, **$decl_line**,
+> **$call_line**, **$use_line**, **$func_context**, **$func_context_name**, **$func_context_path**,
+> **$func_context_decl_line**, **$storage_class**, **$var_name**, **$var_type_name**, **$var_init_values**,
+> **$var_init_list** and **$var_init_list_json**, can be used only in "query" advices.
+> For "before", "around", "after" and "new" advices CIF generates one auxiliary function per matched function or
+> variable and calls it at every join point, so there is no single value to substitute for such directives, and
+> Aspectator reports an internal error if they are used.
+> Directives describing parameters and return values (**$arg**...*i*, **$arg_numb**, **$res**, **$ret_type**, and so
+> on) as well as **$proceed**, **$env**, **$this** and **$fprintf** are available in all advices.
+
 Special directives available for all join points:
 
 * **$path** -- a path to a file containing a join point.

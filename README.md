@@ -6,9 +6,9 @@ language.
 
 ## Why aspects?
 
-Some concerns of a program do not fit into one function or one file: checking of API contracts, tracing, resource
-accounting, fault injection, collecting facts about the code for other tools.
-Implementing them by hand means touching every place where they apply and keeping that code around forever.
+Some things a program has to do cannot live in one function or one file: check API contracts, trace calls, count
+resources, inject faults, collect facts about the code for other tools.
+Written by hand, such code ends up scattered over every place where it applies and stays there forever.
 An *aspect* describes such a concern once, in terms of *join points* of the program (calls, definitions, macro
 expansions, variable accesses), and CIF *weaves* it in at build time.
 The program itself stays as it is, and the aspect can be dropped, replaced or stacked with others.
