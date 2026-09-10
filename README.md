@@ -120,7 +120,7 @@ Download the one for your system, unpack it and put its `bin` directory to `PATH
 
 ```console
 $ mkdir ~/cif
-$ tar -xf linux-x86_64-cif-2022-07-07.tar.xz -C ~/cif
+$ tar -xf linux-x86_64-cif-2026-09-10.tar.xz -C ~/cif
 $ export PATH=~/cif/bin:$PATH
 $ cif --version
 ```
