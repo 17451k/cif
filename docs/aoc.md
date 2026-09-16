@@ -754,11 +754,10 @@ In comparison with `declaration` that represents declarations of functions, vari
 * The `type-specifier` definition supports universal type specifier "$" in addition.
   One declaration can contain no more than one universal type specifier among all its specifiers.
   This restriction is important since exactly the same wildcard can be used in place of a declaration name.
-  For a structure, union, or enumeration declaration a corresponding type specifier should be specified.
-  This is necessary to distinguish declarations using two "$" symbols that match variables or functions.
-  For example, **$ $** can correspond to variables such as *int var1*, *static long int var2* and *char var3[10]*, but
-  it does not match *struct S*, *union U* and *enum E* types.
-  For the latter you can use **struct $**, **union $** and **enum $** respectively.
+  "$" matches any declaration specifier left unspecified by the aspect, including structure, union, and
+  enumeration types as well as `typedef` names.
+  For example, **$ $** can correspond to variables such as *int var1*, *static long int var2*, *char var3[10]*,
+  *struct S s*, and *myint m* (where *myint* is a `typedef` name).
 * `direct-declarator` and `direct-abstract-declarator` supports universal array size "$".
 
 ### Semantics
@@ -782,8 +781,9 @@ Basically the semantics of `declaration` corresponds to the semantics of `declar
 Universal type specifier "$" in the definition of `type-specifier` means the following:
 
 * If the universal type specifier is located before any other type specifier, then it denotes a list of arbitrary
-  declaration specifiers of arbitrary length (the "$" symbol does not match arbitrary `typedef-name`).
-  For instance, **$** matches **char**, **int**, **unsigned int**, **static inline int** and so on.
+  declaration specifiers of arbitrary length, including struct/union/enum types and `typedef` names.
+  For instance, **$** matches **char**, **int**, **unsigned int**, **static inline int**, **struct S**, **union U**,
+  **enum E**, a `typedef` name, and so on. In particular, **introduce($)** matches all composite types.
 * If the universal type specifier is the only type specifier among declaration specifiers (according to the restriction
   specified earlier, it can be functions or variables only), then it denotes a type of variable or return value of a
   function, which is arbitrary up to the specified declaration specifiers.
@@ -849,6 +849,8 @@ The definition of `primitive-pointcut` has following constraints (you can find e
 * `declaration` for "get", "get_global", "get_local", "set", "set_global" and "set_local" should
   be only a variable declaration.
 * `declaration` for "introduce" should be only a declaration of a composite type.
+* "get"/"set" join points are only assignments whose right/left operand is a plain variable, since weaving
+  replaces that operand with a call.
 
 ### Semantics
 
