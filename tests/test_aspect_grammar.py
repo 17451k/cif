@@ -8,6 +8,7 @@ import utils
 # numerous, so they are written to the work directory instead of tests/aspect.
 class TestAspectGrammar(utils.CIFTestCase):
     INFO = 'work/info.txt'
+    SYNTAX_ERROR = 'aspect file processed has incorrect syntax'
 
     def write_aspect(self, name, text):
         path = os.path.join(utils.WORK_DIR, name + '.aspect')
@@ -202,8 +203,6 @@ new: file("work/new.c") { int created; }
 
 
 class TestRejectedSyntax(TestAspectGrammar):
-    SYNTAX_ERROR = 'aspect file processed has incorrect syntax'
-
     def test_undefined_named_pointcut(self):
         self.reject('undefined', 'before: undefined_pc { }\n', 'undefined pointcut with name "undefined_pc"')
 
