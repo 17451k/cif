@@ -28,13 +28,13 @@ void func7(int arg)
 #line 7 "/home/novikov/work/cif-gcc-11/tests/input/stmts/for.c"
     int i = cif_func4 ( );
 #line 7 "/home/novikov/work/cif-gcc-11/tests/input/stmts/for.c"
-    for ( ; cif_func5 ( ) > i ; i = ( func6 ( ) ) + i )
+    for ( ; cif_func5 ( ) > i ; i = ( cif_func6 ( ) ) + i )
     {
       {
 #line 8 "/home/novikov/work/cif-gcc-11/tests/input/stmts/for.c"
         int j = cif_func6 ( );
 #line 8 "/home/novikov/work/cif-gcc-11/tests/input/stmts/for.c"
-        for ( ; cif_func5 ( ) < j ; j -= ( func4 ( ) ) )
+        for ( ; cif_func5 ( ) < j ; j -= ( cif_func4 ( ) ) )
            cif_func1 ( );
       }
       if (i == arg)

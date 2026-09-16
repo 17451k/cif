@@ -1,5 +1,3 @@
-import unittest
-
 from test_aspect_grammar import TestAspectGrammar
 
 
@@ -86,11 +84,9 @@ class TestFunctionDeclarations(TestAspectGrammar):
     def test_struct_param_wildcard_return(self):
         self.check('$ $(struct S)', ['fs'])
 
-    # docs: "the '$' symbol does not match arbitrary typedef-name" -- but observed, "$" as
-    # a parameter type does match the typedef-named parameter of fmy(myint a).
-    @unittest.expectedFailure
-    def test_wildcard_does_not_match_typedef_name(self):
-        self.check('$ $(myint)', [])
+    # "$" matches typedef names too.
+    def test_wildcard_matches_typedef_name(self):
+        self.check('$ $(myint)', ['fmy'])
 
     def test_typedef_name_matches_itself(self):
         self.check('myint $(..)', ['fmy'])
@@ -114,22 +110,20 @@ class TestVariableDeclarations(TestAspectGrammar):
 
     def test_any_any(self):
         self.check('$ $', ['arr2d', 'arr3', 'arr5', 'bo', 'ccp', 'ci', 'cp', 'cpc', 'd', 'ei', 'f', 'fp', 'fpv',
-                            'ge', 'gi', 'gs', 'gu', 'll', 'mi', 'r', 'si', 'sv', 'ul'])
+                            'ge', 'gi', 'gs', 'gu', 'll', 'mi', 'r', 'si', 'sv', 'ul', 'vi'])
 
-    # docs: "int" as the only type-specifier should match only plain "int" variables, but
-    # observed it also matches the "extern int ei" declaration and the local "int r".
+    # "extern" is not recorded for source declarations, so "int" matches "extern int ei" too.
     def test_int_any(self):
-        self.check('int $', ['ei', 'gi', 'r', 'si'])
+        self.check('int $', ['ei', 'gi', 'r'])
 
     def test_static_int(self):
-        self.check('static int $', [])
+        self.check('static int $', ['si'])
 
     def test_const_int(self):
         self.check('const int $', ['ci'])
 
-    # A volatile-qualified variable is never observed among use_var matches at all.
     def test_volatile_any(self):
-        self.check('volatile $ $', [])
+        self.check('volatile $ $', ['vi'])
 
     def test_wildcard_ptr(self):
         self.check('$ *$', ['cp', 'ccp'])
@@ -233,26 +227,17 @@ class TestRejectedDeclarations(TestAspectGrammar):
     def test_two_wildcard_type_specifiers(self):
         self.reject('two_dollars', 'query: execution($ $ $(..)) { }\n', self.SYNTAX_ERROR)
 
-    # docs list $var_name among the special directives available for "get" join points, but
-    # observed: get(<declaration>) { ... $var_name ... } crashes the aspectator with an
-    # internal compiler error whenever <declaration> also matches a function in scope (here,
-    # "int $" also matches "int fi(int a)"). Note: "get(static int $)" does NOT reproduce this
-    # (it runs cleanly with no match); "int $" is the smallest declaration that does.
-    def test_get_with_var_name_crashes(self):
-        body = '{ $fprintf<"work/info.txt","%s\\n",$var_name> }'
-        self.cif.run(cif_input=INPUT, aspect=self.write_aspect('get_crash', 'query: get(int $) ' + body + '\n'),
-                      stage='instrumentation', expected_fail=True)
-        self.assertIn('no variable name was found for aspect pattern "var_name"', self.cif.log)
+    # A query on "get" prints like any other variable query. Only assignments whose
+    # right operand is a plain variable are "get" join points.
+    def test_get_query_prints_var_name(self):
+        matched = self.accept('get_query', 'query: get(int $) { $fprintf<"work/info.txt","%s\\n",$var_name> }\n', cif_input=INPUT)
+        self.assertEqual(sorted(set(matched)), ['a', 'r'])
 
-    # "int int $" is not rejected by the parser (declaration-specifiers is a recursive list
-    # of type-specifiers, so a repeated "int" parses); with use_var() it is simply accepted
-    # and matches exactly as "int $" does (no crash, unlike the get() case above).
+    # Repeated type specifiers are not rejected; "int int $" matches as "int $" does.
     def test_two_int_type_specifiers(self):
         matched = self.accept('two_ints', 'query: use_var(int int $) { $fprintf<"work/info.txt","%s\\n",$var_name> }\n', cif_input=INPUT)
-        self.assertEqual(sorted(set(matched)), sorted(['ei', 'gi', 'r', 'si']))
+        self.assertEqual(sorted(set(matched)), ['ei', 'gi', 'r'])
 
-    # This parses fine (unlike the other rejected cases here) but crashes the aspectator
-    # downstream with a GCC internal compiler error, not the usual aspect syntax error.
     def test_varargs_in_middle(self):
         self.reject('varargs_middle', 'query: execution($ $(int, ..., int)) { }\n',
                      "Used '...' not at the end of parameter list")

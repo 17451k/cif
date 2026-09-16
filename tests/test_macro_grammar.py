@@ -1,5 +1,3 @@
-import unittest
-
 from test_aspect_grammar import TestAspectGrammar
 
 
@@ -33,21 +31,17 @@ class TestMacroDefinitions(TestAspectGrammar):
     def test_two_named_params(self):
         self.check('define($(a, b))', ['TWO'])
 
-    # ".." may only appear as the single wildcard for macro parameters
-    # (LDV: aspectator/libcpp/ldv-cpp-pointcut-matcher.cc fatal error).
+    # ".." matches zero or more parameters at any single position.
     def test_dotdot_then_named_param(self):
-        self.reject('macro_def', 'query: define($(.., b)) ' + self.BODY + '\n',
-                     'there may be the only wildcard ".." for matching macro function parameters')
+        self.check('define($(.., b))', ['ONE', 'TWO', 'THREE'])
 
-    # docs/aoc.md grammar: identifier-or-any-param-list only appends an
-    # identifier via its recursive rule, never "..", so ".." can only be a
-    # sole list element, not follow a named parameter.
     def test_named_param_then_dotdot(self):
-        self.reject('macro_def', 'query: define($(a, ..)) ' + self.BODY + '\n', self.SYNTAX_ERROR)
+        self.check('define($(a, ..))', ['ONE', 'TWO', 'THREE', 'PRE', 'NPRE'])
 
-    # docs/aoc.md ~line 664: "If there are several consecutive '..' separated
-    # by commas, they are treated as one '..'."
-    @unittest.expectedFailure
+    def test_dotdot_between_named_params(self):
+        self.check('define($(a, .., c))', ['TWO', 'THREE'])
+
+    # Consecutive ".." are treated as one.
     def test_consecutive_dotdot_merged(self):
         self.check('define($(.., ..))', ['EMPTY', 'ONE', 'TWO', 'THREE', 'VAR', 'NVAR', 'PRE', 'NPRE'])
 
@@ -144,14 +138,13 @@ class TestDirectiveParameters(TestAspectGrammar):
         matched = self.accept('directive_actual_args', 'query: expand(TWO(..)) { $fprintf<"work/info.txt","%s\\n",$actual_args> }\n', cif_input='input/macros_grammar.c')
         self.assertEqual(matched, ['actual_arg1=1, actual_arg2= 2'])
 
-    # $macro_signature is left out: for expansions it prints garbage bytes.
     def test_combined_macro_directives_on_expansion(self):
         matched = self.accept(
             'directive_combined',
-            'query: expand(TWO(..)) { $fprintf<"work/info.txt","%s|%s|%d\\n",$macro_name,$actual_args,$line> }\n',
+            'query: expand(TWO(..)) { $fprintf<"work/info.txt","%s|%s|%s|%d\\n",$macro_name,$macro_signature,$actual_args,$line> }\n',
             cif_input='input/macros_grammar.c',
         )
-        self.assertEqual(matched, ['TWO|actual_arg1=1, actual_arg2= 2|4'])
+        self.assertEqual(matched, ['TWO|TWO (a, b)|actual_arg1=1, actual_arg2= 2|4'])
 
 
 class TestRejectedMacros(TestAspectGrammar):
