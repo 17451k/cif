@@ -25,12 +25,12 @@ class TestAspectGrammar(utils.CIFTestCase):
         with open(self.INFO, encoding='utf8') as fp:
             return sorted(line.strip() for line in fp if line.strip())
 
-    # Macro bodies print "$path $macro_name" so that macros of stdc-predef.h,
-    # which GCC includes implicitly on glibc systems, can be dropped.
-    MACRO_BODY = '{ $fprintf<"work/info.txt","%s %s\\n",$path,$macro_name> }'
+    # GCC implicitly includes stdc-predef.h on glibc systems. Its macros and
+    # the predefined ones it expands have reserved names, unlike test macros.
+    MACRO_BODY = '{ $fprintf<"work/info.txt","%s\\n",$macro_name> }'
 
     def read_macro_info(self):
-        return sorted(line.split(' ', 1)[1] for line in self.read_info() if 'stdc-predef.h' not in line)
+        return [name for name in self.read_info() if not name.startswith('_')]
 
     def accept(self, name, text, cif_input='input/simple.c'):
         self.cif.run(cif_input=cif_input, aspect=self.write_aspect(name, text), stage='instrumentation')
