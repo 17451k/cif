@@ -25,9 +25,20 @@ class TestAspectGrammar(utils.CIFTestCase):
         with open(self.INFO, encoding='utf8') as fp:
             return sorted(line.strip() for line in fp if line.strip())
 
+    # Macro bodies print "$path $macro_name" so that macros of stdc-predef.h,
+    # which GCC includes implicitly on glibc systems, can be dropped.
+    MACRO_BODY = '{ $fprintf<"work/info.txt","%s %s\\n",$path,$macro_name> }'
+
+    def read_macro_info(self):
+        return sorted(line.split(' ', 1)[1] for line in self.read_info() if 'stdc-predef.h' not in line)
+
     def accept(self, name, text, cif_input='input/simple.c'):
         self.cif.run(cif_input=cif_input, aspect=self.write_aspect(name, text), stage='instrumentation')
         return self.read_info()
+
+    def accept_macro(self, name, text, cif_input='input/simple.c'):
+        self.cif.run(cif_input=cif_input, aspect=self.write_aspect(name, text), stage='instrumentation')
+        return self.read_macro_info()
 
     def reject(self, name, text, message):
         self.cif.run(cif_input='input/simple.c', aspect=self.write_aspect(name, text), stage='instrumentation', expected_fail=True)
@@ -46,10 +57,8 @@ pointcut ANY_DEF: define($) || FUNC_LIKE
 pointcut ANY_EXPAND: expand($) || expand($(..))
 '''
 
-    BODY = '{ $fprintf<"work/info.txt","%s\\n",$macro_name> }'
-
     def check(self, pointcut, expected):
-        matched = self.accept('composition', self.PRELUDE + 'query: ' + pointcut + ' ' + self.BODY + '\n')
+        matched = self.accept_macro('composition', self.PRELUDE + 'query: ' + pointcut + ' ' + self.MACRO_BODY + '\n')
         self.assertEqual(matched, sorted(expected))
 
     def test_named_pointcut(self):
@@ -119,7 +128,7 @@ pointcut ANY_EXPAND: expand($) || expand($(..))
         self.check('\n  SOMETHING\n  ||\n  FUNC_LIKE\n', ['SOMETHING', 'ZERO'])
 
     def test_info_is_alias_for_query(self):
-        matched = self.accept('info', self.PRELUDE + 'info: SOMETHING ' + self.BODY + '\n')
+        matched = self.accept_macro('info', self.PRELUDE + 'info: SOMETHING ' + self.MACRO_BODY + '\n')
         self.assertEqual(matched, ['SOMETHING'])
 
 

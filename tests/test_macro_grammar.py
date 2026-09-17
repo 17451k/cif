@@ -7,10 +7,8 @@ from test_aspect_grammar import TestAspectGrammar
 # object-like, empty function-like, fixed-arity, variadic ("..." and named
 # "args..."), and mixed fixed+variadic ("a, ..." and "a, rest...").
 class TestMacroDefinitions(TestAspectGrammar):
-    BODY = '{ $fprintf<"work/info.txt","%s\\n",$macro_name> }'
-
     def check(self, pointcut, expected):
-        matched = self.accept('macro_def', 'query: ' + pointcut + ' ' + self.BODY + '\n', cif_input='input/macros_grammar.c')
+        matched = self.accept_macro('macro_def', 'query: ' + pointcut + ' ' + self.MACRO_BODY + '\n', cif_input='input/macros_grammar.c')
         self.assertEqual(matched, sorted(expected))
 
     def test_dollar_matches_object_like_only(self):
@@ -78,9 +76,8 @@ class TestMacroDefinitions(TestAspectGrammar):
 
 
 class TestMacroExpansions(TestAspectGrammar):
-    def check(self, pointcut, expected, fmt='"%s\\n",$macro_name'):
-        body = '{ $fprintf<"work/info.txt",' + fmt + '> }'
-        matched = self.accept('macro_expand', 'query: ' + pointcut + ' ' + body + '\n', cif_input='input/macros_grammar.c')
+    def check(self, pointcut, expected):
+        matched = self.accept_macro('macro_expand', 'query: ' + pointcut + ' ' + self.MACRO_BODY + '\n', cif_input='input/macros_grammar.c')
         self.assertEqual(matched, sorted(expected))
 
     def test_dollar_matches_object_like_expansions(self):
@@ -101,7 +98,7 @@ class TestMacroExpansions(TestAspectGrammar):
 
 
 class TestDirectiveParameters(TestAspectGrammar):
-    POINTCUT = 'expand($(..))'
+    POINTCUT = 'expand($(..)) && infile("input/macros_grammar.c")'
 
     def run_body(self, body, cif_input='input/macros_grammar.c'):
         return self.accept('directive_params', 'query: ' + self.POINTCUT + ' { ' + body + ' }\n', cif_input=cif_input)
@@ -148,10 +145,8 @@ class TestDirectiveParameters(TestAspectGrammar):
 
 
 class TestRejectedMacros(TestAspectGrammar):
-    BODY = '{ $fprintf<"work/info.txt","%s\\n",$macro_name> }'
-
     def check_reject(self, pointcut, message=None):
-        self.reject('macro_reject', 'query: ' + pointcut + ' ' + self.BODY + '\n', message or self.SYNTAX_ERROR)
+        self.reject('macro_reject', 'query: ' + pointcut + ' ' + self.MACRO_BODY + '\n', message or self.SYNTAX_ERROR)
 
     def test_space_separated_params(self):
         self.check_reject('define($(a b))')
